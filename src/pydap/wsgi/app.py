@@ -49,8 +49,9 @@ class DapServer(object):
         # optionally, the user can also specify a template directory that will
         # override the default templates; this should have precedence over the
         # default templates
-        if templates is not None:
+        if templates is not None:             
             loaders.insert(0, FileSystemLoader(templates))
+            print(loaders)
 
         # set the rendering environment; this is also used by pydap responses
         # that need to render templates (like HTML, WMS, KML, etc.)
@@ -75,13 +76,15 @@ class DapServer(object):
             return HTTPForbidden()
         elif os.path.exists(path):
             if os.path.isdir(path):
+                # Return the folder view
                 return self.index(path, req)
             else:
+                # Return a file download
                 return FileApp(path)
 
-        # strip DAP extension (``.das``, eg) and see if the file exists
-        base, ext = os.path.splitext(path)
-        if os.path.isfile(base):
+        # strip DAP extension (.das, .dds, .html, .ascii) and see if the file exists
+        base, ext = os.path.splitext(path)           
+        if os.path.isfile(base):            
             req.environ["pydap.jinja2.environment"] = self.env
             app = ServerSideFunctions(get_handler(base, self.handlers))
             return req.get_response(app)

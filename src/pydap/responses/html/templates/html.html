@@ -22,14 +22,22 @@
 {% block content %}
 <div class="form">
     <form class="pure-form pure-form-aligned" action="{{ location }}" method="POST">
-        <button type="submit" class="pure-button pure-button-submit">
+        <button type="submit" class="pure-button pure-button-submit" name=action value="data">
             <i class="icon-download-alt"></i>
             Download data
         </button>
+        <button type="submit" class="pure-button pure-button-submit" name=action value="citation">
+            <i class="icon-download-alt"></i>
+            Get citation
+        </button>
         {{ dispatch(dataset) }}
-        <button type="submit" class="pure-button pure-button-submit">
+        <button type="submit" class="pure-button pure-button-submit" name=action value="data">
             <i class="icon-download-alt"></i>
             Download data
+        </button>
+        <button type="submit" class="pure-button pure-button-submit" name=action value="citation">
+            <i class="icon-download-alt"></i>
+            Get citation
         </button>
     </form>
 </div>

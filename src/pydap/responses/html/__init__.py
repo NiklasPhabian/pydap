@@ -38,8 +38,12 @@ class HTMLResponse(BaseResponse):
     @wsgify
     def __call__(self, req):
         # if request is a post we should redict to ASCII response
-        if req.method == "POST":
-            return self.redirect(req)
+        if req.method == "POST":         
+            print(req.params)
+            if req.params['action'] == 'data':
+                return self.redirect(req)
+            elif req.params['action'] == 'citation' :
+                return 'citation'
 
         # check if the server has specified a render environment; if it has,
         # make a copy and add our loaders to it
@@ -98,5 +102,6 @@ class HTMLResponse(BaseResponse):
             req.path_url[:-5],
             ",".join(projection),
             "&".join(selection)).rstrip("?&")
+        print(location)
 
         return HTTPSeeOther(location=location)
