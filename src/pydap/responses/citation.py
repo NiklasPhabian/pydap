@@ -3,9 +3,6 @@
 The CITATION response is an unnoficial response used to return a citation of the dataset.
 
 """
-import sys
-sys.path.append('/home/phabian/Dropbox/hyrax/')
-from occur.citation import Citation
 import re
 
 from pydap.lib import encode, __version__
