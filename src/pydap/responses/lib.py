@@ -17,9 +17,12 @@ from pydap.lib import __version__
 
 
 def load_responses():
-    """Load all available responses from the system, returning a dictionary."""
-    return dict(
+    """Load all available responses from the system, returning a dictionary."""    
+    for r in iter_entry_points('pydap.response'):        
+        return dict(
         (r.name, r.load()) for r in iter_entry_points('pydap.response'))
+
+
 
 
 class BaseResponse(object):
@@ -46,8 +49,9 @@ class BaseResponse(object):
 
     """
 
-    def __init__(self, dataset):
+    def __init__(self, dataset, request=None):
         self.dataset = dataset
+        self.request = request
         self.headers = [
             ('XDODS-Server', 'pydap/%s' % __version__),
         ]

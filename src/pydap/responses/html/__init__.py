@@ -21,7 +21,7 @@ class HTMLResponse(BaseResponse):
 
     __version__ = __version__
 
-    def __init__(self, dataset):
+    def __init__(self, dataset, req=None):
         BaseResponse.__init__(self, dataset)
         self.headers.extend([
             ("Content-description", "dods_form"),
@@ -37,13 +37,14 @@ class HTMLResponse(BaseResponse):
 
     @wsgify
     def __call__(self, req):
-        # if request is a post we should redict to ASCII response
-        if req.method == "POST":         
-            print(req.params)
+        # if request is a post we should redict to ASCII response or citation
+        if req.method == "POST":                     
             if req.params['action'] == 'data':
-                return self.redirect(req)
+                # If download button is pressed, we redirect to ASCII response
+                return self.redirect_ascii(req)
             elif req.params['action'] == 'citation' :
-                return 'citation'
+                # If citation button is pressed, we redirect to citation
+                return self.redirect_citation(req)                
 
         # check if the server has specified a render environment; if it has,
         # make a copy and add our loaders to it
@@ -73,13 +74,11 @@ class HTMLResponse(BaseResponse):
 
         return Response(
             body=template.render(context),
-            headers=self.headers)
-
-    def redirect(self, req):
-        """Return a redirect to the ASCII response."""
-        projection, selection = [], []
-        for k in req.params:
-            # selection
+            headers=self.headers)   
+        
+    def get_selection(self, req):        
+        selection = []
+        for k in req.params:            
             if k.startswith("var1_") and req.params[k] != "--":
                 name = k[5:]
                 tokens = (
@@ -87,8 +86,11 @@ class HTMLResponse(BaseResponse):
                     req.params["op_%s" % name],
                     req.params["var2_%s" % name])
                 selection.append("".join(tokens))
+        return selection
 
-            # projection
+    def get_projection(self, req):
+        projection = []
+        for k in req.params:
             if req.params[k] == "on":
                 tokens = [k]
                 i = 0
@@ -96,12 +98,26 @@ class HTMLResponse(BaseResponse):
                     tokens.append("[%s]" % req.params["%s[%d]" % (k, i)])
                     i += 1
                 projection.append("".join(tokens))
+        return projection 
 
-        # send to ASCII response
+    def redirect_ascii(self, req):
+        """Return a redirect to the ASCII response."""        
+        projection = self.get_projection(req)        
+        selection = self.get_selection(req)
         location = "{0}.ascii?{1}&{2}".format(
             req.path_url[:-5],
             ",".join(projection),
             "&".join(selection)).rstrip("?&")
-        print(location)
-
-        return HTTPSeeOther(location=location)
+        return HTTPSeeOther(location=location)    
+    
+    def redirect_citation(self, req):
+        """Return a redirect to the citation response."""        
+        projection = self.get_projection(req)        
+        selection = self.get_selection(req)
+        location = "{0}.citation?{1}&{2}".format(
+            req.path_url[:-5],
+            ",".join(projection),
+            "&".join(selection)).rstrip("?&")
+        return HTTPSeeOther(location=location)    
+        
+    

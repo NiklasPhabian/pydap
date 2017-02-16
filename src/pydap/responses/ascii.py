@@ -27,8 +27,7 @@ class ASCIIResponse(BaseResponse):
 
     __version__ = __version__
 
-    def __init__(self, dataset):
-        
+    def __init__(self, dataset, request=None):        
         BaseResponse.__init__(self, dataset)
         self.headers.extend([
             ('Content-description', 'dods_ascii'),

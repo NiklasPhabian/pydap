@@ -79,7 +79,7 @@ class BaseHandler(object):
 
     def __init__(self, dataset=None):
         self.dataset = dataset
-        self.additional_headers = []
+        self.additional_headers = []         
 
     def __call__(self, environ, start_response):
         req = Request(environ)
@@ -93,7 +93,7 @@ class BaseHandler(object):
             # build the dataset and pass it to the proper response, returning a
             # WSGI app
             dataset = self.parse(projection, selection, buffer_size)
-            app = self.responses[response](dataset)
+            app = self.responses[response](dataset, req)
             app.close = self.close
 
             # now build a Response and set additional headers

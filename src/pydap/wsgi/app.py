@@ -51,7 +51,7 @@ class DapServer(object):
         # default templates
         if templates is not None:             
             loaders.insert(0, FileSystemLoader(templates))
-            print(loaders)
+            
 
         # set the rendering environment; this is also used by pydap responses
         # that need to render templates (like HTML, WMS, KML, etc.)
@@ -83,13 +83,14 @@ class DapServer(object):
                 return FileApp(path)
 
         # strip DAP extension (.das, .dds, .html, .ascii) and see if the file exists
-        base, ext = os.path.splitext(path)           
+        base, ext = os.path.splitext(path)                  
         if os.path.isfile(base):            
             req.environ["pydap.jinja2.environment"] = self.env
             app = ServerSideFunctions(get_handler(base, self.handlers))
             return req.get_response(app)
         else:
             return HTTPNotFound(comment=path)
+        
 
     def index(self, directory, req):
         """Return a directory listing."""

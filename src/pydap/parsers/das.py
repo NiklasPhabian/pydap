@@ -133,3 +133,8 @@ def add_attributes(dataset, attributes):
         dataset.attributes[k] = v
 
     return dataset
+
+
+def get_attribute(dataset, attribute):
+    pass
+    

@@ -48,24 +48,25 @@ class ServerSideFunctions(object):
     def __call__(self, environ, start_response):
         # specify that we want the parsed dataset
         environ['x-wsgiorg.want_parsed_response'] = True
-        req = Request(environ)
-        projection, selection = parse_ce(req.query_string)
+        req = Request(environ)        
+        projection, selection = parse_ce(req.query_string)        
 
         # check if there are any functions calls in the request
         called = (
             any(s for s in selection if FUNCTION.match(s)) or
-            any(p for p in projection if isinstance(p, string_types)))
+            any(p for p in projection if isinstance(p, string_types)))        
 
         # ignore DAS requests and requests without functions
         path, response = req.path.rsplit('.', 1)
+        
         if response == 'das' or not called:
             return self.app(environ, start_response)
-
+                
         # apply selection without any function calls
         req.query_string = '&'.join(
             s for s in selection if not FUNCTION.match(s))
-        res = req.get_response(self.app)
-
+        res = req.get_response(self.app)        
+                
         # get the dataset
         method = getattr(res.app_iter, 'x_wsgiorg_parsed_response', False)
         if not method:
@@ -73,8 +74,9 @@ class ServerSideFunctions(object):
         dataset = method(DatasetType)
 
         # apply selection containing server-side functions
-        selection = (s for s in selection if FUNCTION.match(s))
-        for expr in selection:
+        selection = (s for s in selection if FUNCTION.match(s))        
+        
+        for expr in selection:            
             if RELOP.search(expr):
                 call, op, other = RELOP.split(expr)
                 op = {
@@ -85,7 +87,7 @@ class ServerSideFunctions(object):
                     '>=': operator.ge,
                     '<=': operator.le,
                     '=~': lambda a, b: re.match(b, a),
-                }[op]
+                }[op]                
                 other = ast.literal_eval(other)
             else:
                 call, op, other = expr, operator.eq, 1
