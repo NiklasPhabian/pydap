@@ -48,7 +48,7 @@ def load_handlers(working_set=pkg_resources.working_set):
         http://grokbase.com/t/python/distutils-sig/074rc4a6hb/ \
                 distutils-programmatically-adding-entry-points
 
-    """
+    """    
     return [ep.load() for ep in working_set.iter_entry_points("pydap.handler")]
 
 

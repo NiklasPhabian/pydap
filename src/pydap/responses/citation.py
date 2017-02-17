@@ -84,6 +84,17 @@ class Citation:
         cit_text += self.subset_text() 
         cit_text += '\n}'
         return cit_text
+    
+    def as_bibtex(self):
+        bib_text = '@ELECTRONIC{'
+        for key in self.meta:
+            bib_text += '\n\t'
+            meta_text += key
+            meta_text += ': {'
+            meta_text += self.meta[key]
+            meta_text += '},'
+        meta_text = meta_text[:-1]
+        meta_text += '\n}'
         
     def subset_text(self):
         if len(self.subset)>0:
