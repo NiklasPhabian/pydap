@@ -86,7 +86,7 @@ setup(name='Pydap',
             html = pydap.responses.html:HTMLResponse
             asc = pydap.responses.ascii:ASCIIResponse
             ascii = pydap.responses.ascii:ASCIIResponse
-            citation = pydap.responses.citation:CITATIONResponse
+            citation = pydap.responses.citation:CitationResponse
             ver = pydap.responses.version:VersionResponse
 
             [pydap.function]
