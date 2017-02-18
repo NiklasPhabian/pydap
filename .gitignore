@@ -1,5 +1,9 @@
 *.py[cod]
 
+# KDE files
+*.directory
+**.Rhistory
+
 # C extensions
 *.so
 

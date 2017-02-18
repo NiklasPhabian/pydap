@@ -13,7 +13,7 @@ import collections
 import datetime
 
 
-class CITATIONResponse(BaseResponse):
+class CitationResponse(BaseResponse):
     """The Citation response."""
 
     __version__ = __version__
@@ -25,8 +25,7 @@ class CITATIONResponse(BaseResponse):
         citation = Citation()                
         citation.from_attributes(self.dataset.attributes)                        
         citation.subsets_from_query_str(self.request.query_string)
-        
-        
+        citation.intentifier_from_request(self.request)
         yield citation.as_text()
             
             
@@ -34,22 +33,31 @@ class Citation:
     def __init__(self):
         self.meta = collections.OrderedDict()
         self.meta['author'] = None
-        self.meta['creation_date'] = None
         self.meta['title'] = None
-        self.meta['version'] = None
         self.meta['institution'] = None
+        self.meta['date'] = None        
+        self.meta['version'] = None        
         self.meta['url'] = None
         self.meta['accessed'] = datetime.datetime.now().strftime('%Y-%m-%d')
-        self.meta['doi'] = None
+        self.meta['doi'] = None        
+        self.meta['identifier'] = None
         self.subset = collections.OrderedDict()
+        
+    def intentifier_from_request(self, request):
+        self.meta['identifier'] = request.application_url+request.path
 
-    def from_attributes(self, attributes):
+    def from_attributes(self, attributes):                   
+        self.meta['author'] = self.author_from_attributes(attributes)
+        self.meta['title'] = self.title_from_attributes(attributes)        
         self.meta['institution'] = self.institution_from_attributes(attributes)
         self.meta['date'] = self.date_from_attributes(attributes)
-        self.meta['author'] = self.author_from_attributes(attributes)
         
     def institution_from_attributes(self, attributes):
-        identifiers = ['institution', 'Institution', 'NC_GLOBAL.Institution']
+        identifiers = ['institution', 'NC_GLOBAL.Institution']
+        return self.find_attribute(identifiers, attributes)
+    
+    def title_from_attributes(self, attributes):
+        identifiers = ['title', 'NC_GLOBAL.Title']
         return self.find_attribute(identifiers, attributes)
     
     def date_from_attributes(self, attributes):
@@ -57,19 +65,17 @@ class Citation:
         return self.find_attribute(identifiers, attributes)        
     
     def author_from_attributes(self, attributes):
-        identifiers = ['NC_GLOBAL.AUTHOR']        
+        identifiers = ['NC_GLOBAL.AUTHOR', 'AUTHOR']        
         return self.find_attribute(identifiers, attributes)        
 
     def find_attribute(self, identifiers, attributes):
         attribute = None        
-        for identifier in identifiers:
-            if identifier in attributes['NC_GLOBAL']:
-                attribute =  attributes['NC_GLOBAL'][identifier]
-        return attribute
-
-                
-    def add_subset_param(self, subset_param):        
-            
+        for attribute in attributes['NC_GLOBAL']:
+            for identifier in identifiers:
+                if identifier.lower() == attribute.lower():
+                    return attributes['NC_GLOBAL'][attribute]
+                        
+    def add_subset_param(self, subset_param):                    
             self.subset[subset_param[0]] = ' '
             
     def subsets_from_query_str(self, query_string):        
