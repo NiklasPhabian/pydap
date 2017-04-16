@@ -23,14 +23,14 @@ from six import text_type, string_types, next
 from pydap.model import (BaseType,
                          SequenceType, StructureType,
                          GridType)
-from pydap.net import GET, raise_for_status
-from pydap.lib import (
+from ..net import GET, raise_for_status
+from ..lib import (
     encode, combine_slices, fix_slice, hyperslab,
     START_OF_SEQUENCE, walk)
-from pydap.handlers.lib import ConstraintExpression, BaseHandler, IterData
-from pydap.parsers.dds import build_dataset
-from pydap.parsers.das import parse_das, add_attributes
-from pydap.parsers import parse_ce
+from .lib import ConstraintExpression, BaseHandler, IterData
+from ..parsers.dds import build_dataset
+from ..parsers.das import parse_das, add_attributes
+from ..parsers import parse_ce
 logger = logging.getLogger('pydap')
 logger.addHandler(logging.NullHandler())
 
@@ -49,11 +49,15 @@ class DAPHandler(BaseHandler):
         ddsurl = urlunsplit((scheme, netloc, path + '.dds', query, fragment))
         r = GET(ddsurl, application, session)
         raise_for_status(r)
+        if not r.charset:
+            r.charset = 'ascii'
         dds = r.text
 
         dasurl = urlunsplit((scheme, netloc, path + '.das', query, fragment))
         r = GET(dasurl, application, session)
         raise_for_status(r)
+        if not r.charset:
+            r.charset = 'ascii'
         das = r.text
 
         # build the dataset from the DDS and add attributes from the DAS
@@ -135,43 +139,9 @@ class BaseProxy(object):
         dds, data = r.body.split(b'\nData:\n', 1)
         dds = dds.decode(r.content_encoding or 'ascii')
 
-        if self.shape:
-            # skip size packing
-            if self.dtype.char in 'SU':
-                data = data[4:]
-            else:
-                data = data[8:]
-
-        # calculate array size
-        shape = tuple(
-            int(np.ceil((s.stop-s.start)/float(s.step))) for s in index)
-        size = int(np.prod(shape))
-
-        if self.dtype == np.byte:
-            return np.fromstring(data[:size], 'B').reshape(shape)
-        elif self.dtype.char in 'SU':
-            out = []
-            for word in range(size):
-                n = np.asscalar(np.fromstring(data[:4], '>I'))  # read length
-                data = data[4:]
-                out.append(data[:n])
-                data = data[n + (-n % 4):]
-            return np.array([text_type(x.decode('ascii'))
-                             for x in out], 'S').reshape(shape)
-        else:
-            try:
-                return np.fromstring(data, self.dtype).reshape(shape)
-            except ValueError as e:
-                if str(e) == 'total size of new array must be unchanged':
-                    # server-side failure.
-                    # it is expected that the user should be mindful of this:
-                    raise RuntimeError(
-                                ('variable {0} could not be properly '
-                                 'retrieved. To avoid this '
-                                 'error consider using open_url(..., '
-                                 'output_grid=False).').format(quote(self.id)))
-                else:
-                    raise
+        # Parse received dataset:
+        dataset = build_dataset(dds, data=data)
+        return dataset[self.id].data
 
     def __len__(self):
         return self.shape[0]
@@ -249,7 +219,7 @@ class SequenceProxy(object):
         # return a new object with requested columns
         elif isinstance(key, list):
             out.sub_children = True
-            out.template._keys = key
+            out.template._visible_keys = key
 
         # return a copy with the added constraints
         elif isinstance(key, ConstraintExpression):
@@ -295,18 +265,12 @@ class SequenceProxy(object):
 
         # Fast forward past the DDS header
         # the pattern could span chunk boundaries though so make sure to check
-        previous_chunk = b''
-        this_chunk = b''
         pattern = b'Data:\n'
-        for this_chunk in i:
-            m = re.search(pattern, previous_chunk + this_chunk)
-            if m:
-                break
-        if not m:
+        last_chunk = find_pattern_in_string_iter(pattern, i)
+
+        if last_chunk is None:
             raise ValueError("Could not find data segment in response from {}"
                              .format(self.url))
-
-        last_chunk = (previous_chunk + this_chunk)[m.end():]
 
         # Then construct a stream consisting of everything from
         # 'Data:\n' to the end of the chunk + the rest of the stream
@@ -442,6 +406,17 @@ def unpack_children(stream, template):
 def unpack_data(xdr_stream, dataset):
     """Unpack a string of encoded data, returning data as lists."""
     return unpack_children(xdr_stream, dataset)
+
+
+def find_pattern_in_string_iter(pattern, i):
+    last_chunk = b''
+    length = len(pattern)
+    for this_chunk in i:
+        last_chunk += this_chunk
+        m = re.search(pattern, last_chunk)
+        if m:
+            return last_chunk[m.end():]
+        last_chunk = last_chunk[-length:]
 
 
 def dump():  # pragma: no cover

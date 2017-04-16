@@ -27,9 +27,9 @@ import numpy as np
 import coards
 import gsw
 
-from pydap.model import SequenceType, GridType, BaseType
-from pydap.lib import walk
-from pydap.exceptions import ConstraintExpressionError, ServerError
+from ..model import SequenceType, GridType, BaseType
+from ..lib import walk
+from ..exceptions import ConstraintExpressionError, ServerError
 
 
 def density(dataset, salinity, temperature, pressure):
@@ -48,7 +48,7 @@ def density(dataset, salinity, temperature, pressure):
             'Function "bounds" should be used on a Sequence.')
 
     selection = sequence[salinity.name, temperature.name, pressure.name]
-    rows = [tuple(row) for row in selection]
+    rows = [tuple(row) for row in selection.iterdata()]
     data = np.rec.fromrecords(
         rows, names=['salinity', 'temperature', 'pressure'])
     rho = gsw.rho(data['salinity'], data['temperature'], data['pressure'])

@@ -1,23 +1,27 @@
 from setuptools import setup, find_packages
+import sys
 
-
-__version__ = '3.2.0'
+__version__ = '3.2.1'
 
 install_requires = [
     'numpy',
-    'singledispatch',
     'Webob',
     'Jinja2',
     'docopt',
-    'gunicorn',
     'six >= 1.4.0',
     'mechanicalsoup',
 ]
 
+if sys.version_info < (3, 5):
+    install_requires.append('singledispatch')
+
 functions_extras = [
-    'gsw',
-    'coards',
-    'scipy',
+    'gsw>=3.0.6',
+    'coards'
+]
+
+server_extras = [
+    'gunicorn',
 ]
 
 docs_extras = [
@@ -30,16 +34,17 @@ cas_extras = [
     'requests'
     ]
 
-tests_require = functions_extras + cas_extras + [
+tests_require = functions_extras + cas_extras + server_extras + [
     'WebTest',
     'beautifulsoup4',
-    'scipy',
     'flake8'
 ]
 
 testing_extras = tests_require + [
-    'nose',
-    'coverage',
+    'pytest>=2.8',
+    'pytest-cov',
+    'pytest-attrib',
+    'mock',
     'requests'
 ]
 
@@ -52,7 +57,8 @@ setup(name='Pydap',
             "Programming Language :: Python :: 2.7",
             "Programming Language :: Python :: 3.3",
             "Programming Language :: Python :: 3.4",
-            "Programming Language :: Python :: 3.5"
+            "Programming Language :: Python :: 3.5",
+            "Programming Language :: Python :: 3.6"
             # Get strings from
             # http://pypi.python.org/pypi?%3Aaction=list_classifiers
             ],
@@ -75,7 +81,8 @@ setup(name='Pydap',
             'testing': testing_extras,
             'docs': docs_extras,
             'tests': tests_require,
-            'cas': cas_extras
+            'cas': cas_extras,
+            'server': server_extras
       },
       test_suite="pydap.tests",
       entry_points="""

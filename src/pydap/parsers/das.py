@@ -12,8 +12,8 @@ import operator
 
 from six.moves import reduce
 
-from pydap.parsers import SimpleParser
-from pydap.lib import walk
+from . import SimpleParser
+from ..lib import walk
 
 
 atomic = ('byte', 'int', 'uint', 'int16', 'uint16', 'int32', 'uint32',
@@ -83,7 +83,7 @@ class DASParser(SimpleParser):
 
             if type.lower() in ['string', 'url']:
                 value = str(value).strip('"')
-            elif value.lower() in ['nan', 'nan.']:
+            elif value.lower() in ['nan', 'nan.', '-nan']:
                 value = float('nan')
             else:
                 value = ast.literal_eval(value)
@@ -124,9 +124,16 @@ def add_attributes(dataset, attributes):
             nested = reduce(
                 operator.getitem, [attributes] + var.id.split('.')[:-1])
             k = var.id.split('.')[-1]
-            var.attributes.update(nested.pop(k))
+            value = nested.pop(k)
         except KeyError:
             pass
+        else:
+            try:
+                var.attributes.update(value)
+            except (TypeError, ValueError):
+                # This attribute should be given to the parent.
+                # Keep around:
+                nested.update({k: value})
 
     # add attributes that don't belong to any child
     for k, v in attributes.items():
