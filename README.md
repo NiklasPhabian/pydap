@@ -19,5 +19,5 @@ This Fork
 In this fork, a feature for automatic citation generation is added to pydap. This is implemented by adding a "citation response" to pydap. The citation is constructed from meta data in the DAS, the date of access and the subsetting (selection) parameters. The citation response (citation representation of the data) can accordingly be accessed by appending ".citation" to the url of the dataset.
 
 The addition of the citation response is implemented in a fork of pydap, rather than in just an additional response for two reasons: 
-a) since the citation response contains the subsetting parameters, it requires knowledge of the request, rather than just the dataset. Therefore changes to the data handler lib had to be made.
-b) For the purpose of presentation, the webinterface was modified to include buttons to access the citation response.
+1. since the citation response contains the subsetting parameters, it requires knowledge of the request, rather than just the dataset. Therefore changes to the data handler lib had to be made.
+2. For the purpose of presentation, the webinterface was modified to include buttons to access the citation response.
