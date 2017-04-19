@@ -26,8 +26,7 @@ This for can be installed by
     pip git+https://github.com/NiklasPhabian/pydap
     
 ## Launching a pydap server
-One can use the pydap.wsgi.app:DapServer class, initialized with the path to your data files (a DapServer object is a WSGI callable). Then you can expose that as your "app" to any WSGI framework.
-It would looks something (very rough approximation) like this:
+One can use the pydap.wsgi.app:DapServer class, initialized with the path to your data files (a DapServer object is a WSGI callable). Then you can expose that as your "app" to any WSGI framework (from https://github.com/pydap/pydap/issues/46):
 
     from flask import Flask
     from pydap.wsgi.app import DapServer
