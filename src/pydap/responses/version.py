@@ -20,7 +20,7 @@ class VersionResponse(object):
 
     __version__ = __version__
 
-    def __init__(self, dataset):
+    def __init__(self, dataset, req=None):
         output = {
             "pydap": __version__,
             "dap": __dap__,

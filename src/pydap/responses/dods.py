@@ -43,8 +43,8 @@ class DODSResponse(BaseResponse):
 
     __version__ = __version__
 
-    def __init__(self, dataset):
-        BaseResponse.__init__(self, dataset)
+    def __init__(self, dataset, req=None):
+        BaseResponse.__init__(self, dataset)            
         self.headers.extend([('Content-description', 'dods_data'),
                              ('Content-type', 'application/octet-stream')])
 
