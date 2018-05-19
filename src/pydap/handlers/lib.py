@@ -189,7 +189,7 @@ def apply_selection(selection, dataset):
         conditions = [
             condition for condition in selection
             if re.match(
-                '%s\.[^\.]+(<=|<|>=|>|=|!=)' % re.escape(seq.id), condition)]
+                r'%s\.[^\.]+(<=|<|>=|>|=|!=)' % re.escape(seq.id), condition)]
         for condition in conditions:
             id1, op, id2 = parse_selection(condition, dataset)
             seq.data = seq[op(id1, id2)].data
@@ -221,11 +221,10 @@ def apply_projection(projection, dataset):
             if isinstance(candidate, StructureType):
                 if name not in target.keys():
                     if i < len(p) - 1:
-                        # if there are more children to add we need to clear
-                        # the candidate so it has only explicitly added
-                        # children; also, Grids are degenerated into Structures
+                        # A shallow copy of the candidate is created
+                        candidate = candidate.__shallowcopy__()
+                        # Grids are degenerated into Structures
                         candidate = degenerate_grid_to_structure(candidate)
-                        candidate._visible_keys = []
                     target[name] = candidate
                 target, template = target[name], template[name]
             else:
@@ -346,7 +345,7 @@ class IterData(object):
         # column is returned
         if isinstance(key, string_types):
             try:
-                col = list(self.template.keys()).index(key)
+                col = list(self.template._all_keys()).index(key)
             except ValueError:
                 raise KeyError(key)
             out.level += 1

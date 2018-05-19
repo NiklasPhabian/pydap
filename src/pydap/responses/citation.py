@@ -25,8 +25,8 @@ class CitationResponse(BaseResponse):
         citation = Citation()                
         citation.from_attributes(self.dataset.attributes)                        
         citation.subsets_from_query_str(self.request.query_string)
-        citation.intentifier_from_request(self.request)
-        yield citation.as_text()
+        citation.intentifier_from_request(self.request)        
+        yield citation.as_text().encode('ascii')
             
             
 class Citation:

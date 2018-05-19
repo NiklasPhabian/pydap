@@ -1,7 +1,7 @@
 from setuptools import setup, find_packages
 import sys
 
-__version__ = '3.2.1'
+__version__ = '3.2.2'
 
 install_requires = [
     'numpy',
@@ -9,19 +9,20 @@ install_requires = [
     'Jinja2',
     'docopt',
     'six >= 1.4.0',
-    'mechanicalsoup',
+    'beautifulsoup4'
 ]
 
 if sys.version_info < (3, 5):
     install_requires.append('singledispatch')
 
 functions_extras = [
-    'gsw>=3.0.6',
+    'gsw==3.0.6',
     'coards'
 ]
 
 server_extras = [
     'gunicorn',
+    'PasteDeploy',
 ]
 
 docs_extras = [
@@ -31,31 +32,40 @@ docs_extras = [
 ]
 
 cas_extras = [
-    'requests'
+    'requests',
+    'lxml'
     ]
 
-tests_require = functions_extras + cas_extras + server_extras + [
-    'WebTest',
-    'beautifulsoup4',
-    'flake8'
-]
+hdl_netcdf_extras = [
+    'netCDF4',
+    'ordereddict'
+    ]
+
+tests_require = (functions_extras + cas_extras + server_extras +
+                 hdl_netcdf_extras +
+                 ['WebTest',
+                  'beautifulsoup4',
+                  'flake8'])
 
 testing_extras = tests_require + [
     'pytest>=2.8',
     'pytest-cov',
     'pytest-attrib',
-    'mock',
+    'requests-mock',
     'requests'
 ]
 
+if sys.version_info < (3, 3):
+    testing_extras.append('mock')
 
 setup(name='Pydap',
       version=__version__,
       description="An implementation of the Data Access Protocol.",
       long_description="",
       classifiers=[
+            "Programming Language :: Python :: 2",
             "Programming Language :: Python :: 2.7",
-            "Programming Language :: Python :: 3.3",
+            "Programming Language :: Python :: 3",
             "Programming Language :: Python :: 3.4",
             "Programming Language :: Python :: 3.5",
             "Programming Language :: Python :: 3.6"
@@ -82,7 +92,8 @@ setup(name='Pydap',
             'docs': docs_extras,
             'tests': tests_require,
             'cas': cas_extras,
-            'server': server_extras
+            'server': server_extras,
+            'handlers.netcdf': hdl_netcdf_extras
       },
       test_suite="pydap.tests",
       entry_points="""
